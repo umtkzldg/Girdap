@@ -388,7 +388,7 @@ home:()=>{const n=Math.min(S.unlocked,LV);return`<div class=top><button class=pf
 <p class=toast>${toast}</p><p class=hint>Ok tuşları, A–D ya da ekranın yarısına dokun</p>`},
 levels:()=>{let h='<h2>Bölümler</h2><div class=wstrip>';for(let w=0;w<TN.length;w++){h+=`<div class=wcol><div class=wh style="color:${TC[w]}">${TN[w]}</div>`;for(let i=w*5+1;i<=w*5+5;i++){const o=i<=S.unlocked;h+=`<button class="lv ${o?'':'x'}" style="border-color:${TC[w]}" ${o?`data-a=play data-v=${i}`:'disabled'}>${o?i:'🔒'}<small>${o?stars(S.stars[i]||0):''}</small></button>`}h+='</div>'}return h+'</div><button class="b g" data-a=home>Geri</button>'},
 shop:()=>{let h=`<h2>Toplar</h2><div class=chip>${CI} ${S.coins}</div><div class=wstrip>`;TH.forEach((x,i)=>{const own=S.themes.includes(i);h+=`<div class="th ${S.theme==i?'on':''}"><div class=sw style="border-radius:50%;background:${x.rb?'conic-gradient(red,yellow,lime,cyan,blue,magenta,red)':`radial-gradient(circle at 35% 30%,#fff,hsl(${x.h},95%,55%))`}"></div><span>${x.n}<small>${x.d}</small></span><button class="b ${own?'':'p'} g" style="${own?'':'color:#120428'}" data-a=${own?'pick':'buy'} data-v=${i}>${S.theme==i?'Seçili':own?'Seç':x.c+' jeton'}</button></div>`});h+=`<div class=th><div class=sw style="border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#4de8ff)"></div><span>Başlangıç kalkanı<small>Sahip: ${S.sh||0} · bir çarpmayı engeller</small></span><button class="b p g" data-a=bsh style="color:#120428">80 jeton</button></div>`;return h+'</div><button class="b g" data-a=home>Geri</button>'},
-profile:()=>`<h2>Profil</h2><p class=big>${S.name||'-'}</p><p>Ad kayıt olduğunda seçildi ve değiştirilemez.</p><button class="b g" data-a=home>Geri</button>`,
+profile:()=>`<h2>Profil</h2><p class=big>${S.name||'-'}</p><p>Adını haftada bir değiştirebilirsin.</p><p>${S.rt&&Date.now()-S.rt<WEEK?'Sonraki değişiklik: '+Math.ceil((S.rt+WEEK-Date.now())/864e5)+' gün sonra':'Adını şimdi değiştirebilirsin'}</p><input id=nn maxlength=14 placeholder="Yeni ad" style="${INP}"><button class="b p g" data-a=renameName>Adı değiştir</button><p class=toast>${PMSG}</p><button class="b g" data-a=home>Geri</button>`,
 register:()=>`<h2>Hoş geldin!</h2><p>Oyuncu adını seç (2-14 harf, rakam veya _). Ad diğer oyuncular tarafından görülür ve değiştirilemez.</p><input id=rgn maxlength=14 placeholder="Adın" style="${INP}"><button class="b p big" data-a=register>Kayıt ol</button><p class=toast>${PMSG}</p>`,
 friends:()=>`<h2 class=full>Arkadaşlar</h2><div style="display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-start;gap:18px;width:100%"><div style="display:flex;flex-direction:column;align-items:center;gap:8px;flex:1 1 260px;max-width:300px;min-width:0"><p style="margin:0">Arkadaş ekle (isimle)</p><input id=fni maxlength=14 placeholder="Oyuncu adı" style="${INP};width:100%;max-width:260px;box-sizing:border-box"><button class="b g" data-a=addFriend>İstek gönder</button><p class=toast style="margin:0">${FMSG}</p><div id=freq style="width:100%"></div></div><div style="display:flex;flex-direction:column;align-items:center;gap:8px;flex:1 1 260px;max-width:300px;min-width:0"><p style="margin:0">Arkadaşların</p><div id=flist style="display:flex;flex-direction:column;gap:6px;width:100%">Yükleniyor…</div></div></div><button class="b g full" data-a=home>Geri</button>`,
 friend:()=>`<h2>${FRN}</h2><button class="b p big" data-a=chat>Sohbet</button><p>Düello bölümü (1-40)</p><input id=dlv type=number min=1 max=40 value=1 style="${INP}"><div class=row><button class="b p g" data-a=challenge>Düello gönder</button><button class="b g" data-a=friends>Geri</button></div>`,
@@ -433,12 +433,22 @@ async function registerName(v){const n=(v||'').trim();if(!/^[\p{L}\p{N}_]{2,14}$
  const k=nkey(n);const r=await DB.ref('names/'+k).transaction(c=>c===null?UID:c);
  if(!r.committed||r.snapshot.val()!==UID)return 'Bu ad alınmış';
  S.name=n;save();DB.ref('users/'+UID+'/name').set(n);hb();return null}
+const WEEK=7*864e5;
 function sf(){show('friends');loadFriends()}
+async function renameTo(v){const n=(v||'').trim();if(!/^[\p{L}\p{N}_]{2,14}$/u.test(n))return 'Ad 2-14 harf, rakam veya _ olmalı';if(!UID)return 'Bağlanıyor, bir saniye bekle';
+ if(n==S.name)return 'Bu zaten senin adın';
+ if(S.rt&&Date.now()-S.rt<WEEK)return 'Adını haftada bir değiştirebilirsin ('+Math.ceil((S.rt+WEEK-Date.now())/864e5)+' gün kaldı)';
+ const k=nkey(n),old=S.name?nkey(S.name):null;
+ const r=await DB.ref('names/'+k).transaction(c=>c===null?UID:c);
+ if(!r.committed||r.snapshot.val()!==UID)return 'Bu ad alınmış';
+ if(old&&old!=k)await DB.ref('names/'+old).remove();
+ S.rt=Date.now();
+ S.name=n;save();DB.ref('users/'+UID+'/name').set(n);hb();return null}
 async function loadFriends(){const fl=$('#flist'),fq=$('#freq');if(!fl||!UID)return;
  const rq=(await DB.ref('req/'+UID).once('value')).val()||{};
  if(fq)fq.innerHTML=Object.keys(rq).map(u=>`<div class=set style="cursor:default;width:100%;margin-top:6px"><span>${rq[u].n} istek gönderdi</span><div class=row><button class="b p g" data-a=acceptReq data-n="${u}">Kabul</button><button class="b g" data-a=declineReq data-n="${u}">Red</button></div></div>`).join('');
  const fr=(await DB.ref('friends/'+UID).once('value')).val()||{};
- const rows=await Promise.all(Object.keys(fr).map(async u=>{const p=(await DB.ref('presence/'+u).once('value')).val(),on=p&&Date.now()-p.t<90000;return `<button class=set data-a=friend data-n="${u}" style="width:100%"><span>${fr[u]}</span><i style="color:${on?'#3ddc84':'#888'}">${on?(p.s=='oyunda'?'OYUNDA':'ÇEVRİMİÇİ'):'ÇEVRİMDIŞI'}</i></button>`}));
+ const rows=await Promise.all(Object.keys(fr).map(async u=>{const p=(await DB.ref('presence/'+u).once('value')).val(),nm=(await DB.ref('users/'+u+'/name').once('value')).val()||fr[u],on=p&&Date.now()-p.t<90000;return `<button class=set data-a=friend data-n="${u}" style="width:100%"><span>${nm}</span><i style="color:${on?'#3ddc84':'#888'}">${on?(p.s=='oyunda'?'OYUNDA':'ÇEVRİMİÇİ'):'ÇEVRİMDIŞI'}</i></button>`}));
  fl.innerHTML=rows.join('')||'<p>Henüz arkadaşın yok</p>'}
 async function loadLB(){const e=$('#lbx');if(!e)return;const v=(await DB.ref('lb').orderByChild('s').limitToLast(10).once('value')).val()||{};const arr=Object.values(v).sort((a,b)=>b.s-a.s);e.innerHTML=arr.map((x,i)=>`<p>${i+1}. ${x.n} · ${x.s} puan</p>`).join('')||'<p>Henüz kayıt yok</p>'}
 function openChat(){if(CHREF)CHREF.off();CHREF=DB.ref('chat/'+pkey(UID,FR)).limitToLast(60);CHREF.on('value',v=>{const c=$('#cl');if(!c)return;const arr=Object.values(v.val()||{}).sort((a,b)=>a.t-b.t);c.innerHTML=arr.map(x=>`<div><b style="color:${x.f==UID?'#2ef2ff':'#ff2e93'}">${x.n}:</b> ${String(x.m).replace(/</g,'&lt;')}</div>`).join('');c.scrollTop=c.scrollHeight})}
@@ -464,6 +474,7 @@ acceptInv:async()=>{const i=INV;INV=null;const sd=(Math.random()*1e9)|0,t=Date.n
 declineInv:async()=>{const i=INV;INV=null;await DB.ref('inv/'+UID+'/'+i.u).remove();show('home')},
 register:async()=>{const e=await registerName(($('#rgn')||{}).value);if(e){PMSG=e;return show('register')}PMSG='';show('home')},
 stats:()=>{show('stats');loadLB()},
+renameName:async()=>{const n=(($('#nn')||{}).value||'');PMSG='';const e=await renameTo(n);PMSG=e||'Ad değiştirildi';show('profile')},
 
 profile:()=>show('profile'),
 
