@@ -449,7 +449,7 @@ async function netStart(){
 async function registerName(v){const n=(v||'').trim();if(!/^[\p{L}\p{N}_]{2,14}$/u.test(n))return 'Ad 2-14 harf, rakam veya _ olmalı';if(!UID)return AERR?'Giriş yapılamadı: '+AERR:'Bağlanıyor, bir saniye sonra tekrar dene';
  const k=nkey(n);const r=await DB.ref('names/'+k).transaction(c=>c===null?UID:c);
  if(!r.committed||r.snapshot.val()!==UID)return 'Bu ad alınmış';
- S.name=n;save();DB.ref('users/'+UID+'/name').set(n);hb();return null}
+ S.name=n;save();DB.ref('users/'+UID+'/name').set(n);DB.ref('lb/'+UID).transaction(c=>c?Object.assign({},c,{n}):undefined).catch(()=>{});hb();return null}
 const WEEK=7*864e5;
 function sf(){show('friends');loadFriends()}
 async function renameTo(v){const n=(v||'').trim();if(!/^[\p{L}\p{N}_]{2,14}$/u.test(n))return 'Ad 2-14 harf, rakam veya _ olmalı';if(!UID)return AERR?'Giriş yapılamadı: '+AERR:'Bağlanıyor, bir saniye bekle';
@@ -460,7 +460,7 @@ async function renameTo(v){const n=(v||'').trim();if(!/^[\p{L}\p{N}_]{2,14}$/u.t
  if(!r.committed||r.snapshot.val()!==UID)return 'Bu ad alınmış';
  if(old&&old!=k)await DB.ref('names/'+old).remove();
  S.rt=Date.now();
- S.name=n;save();DB.ref('users/'+UID+'/name').set(n);hb();return null}
+ S.name=n;save();DB.ref('users/'+UID+'/name').set(n);DB.ref('lb/'+UID).transaction(c=>c?Object.assign({},c,{n}):undefined).catch(()=>{});hb();return null}
 async function loadFriends(){const fl=$('#flist'),fq=$('#freq');if(!fl||!UID)return;
  const rq=(await DB.ref('req/'+UID).once('value')).val()||{};
  if(fq)fq.innerHTML=Object.keys(rq).map(u=>`<div class=set style="cursor:default;width:100%;margin-top:6px"><span>${rq[u].n} istek gönderdi</span><div class=row><button class="b p g" data-a=acceptReq data-n="${u}">Kabul</button><button class="b g" data-a=declineReq data-n="${u}">Red</button></div></div>`).join('');
