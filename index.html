@@ -52,6 +52,9 @@ p{margin:0;opacity:.9}.sub{font-size:18px;margin-bottom:10px}.big{font-size:22px
 .set{display:flex;justify-content:space-between;align-items:center;gap:12px;width:min(360px,92vw);padding:14px 18px;border-radius:14px;border:2px solid var(--cyan);background:var(--panel);color:#fff;font:500 16px Rubik,sans-serif;cursor:pointer}
 .set i{font:normal 13px Bungee,sans-serif;color:var(--cyan)}.set.off{border-color:#fff3}.set.off i{color:#ff6b8b}
 
+button{transition:transform .08s ease,filter .08s ease}
+button:active{transform:scale(.93);filter:brightness(1.25)}
+button:disabled{opacity:.6}
 /* ---------- NET MENÜ TASARIMI ---------- */
 #ui{background:rgba(3,1,12,.62)}
 .pg{max-width:440px;background:rgba(8,3,26,.94);border:2px solid rgba(46,242,255,.55);border-radius:24px;padding:28px 20px;box-shadow:0 0 44px rgba(46,242,255,.3),0 24px 60px rgba(0,0,0,.7)}
@@ -112,6 +115,14 @@ p{margin:0;opacity:.9}.sub{font-size:18px;margin-bottom:10px}.big{font-size:22px
 .wstrip .th span{text-align:center}
 .wstrip .th .b{min-width:0;width:100%}
 .wstrip .sw{width:60px;height:60px}
+.dm{position:fixed;inset:0;z-index:150;background:rgba(3,1,12,.8);display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box}
+.dmc{background:#0b0620;border:2px solid #2ef2ff;border-radius:18px;padding:20px 16px;max-width:460px;width:100%;text-align:center;box-shadow:0 0 30px #2ef2ff44;box-sizing:border-box}
+.dmrow{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;margin:12px 0}
+.dmd{border:1px solid #2ef2ff55;border-radius:10px;padding:6px 2px;font:11px Rubik,sans-serif;background:#0b0620}
+.dmd b{display:block;font:14px Bungee,sans-serif;color:#ffd23f;margin-top:4px}
+.dmd.done{opacity:.4}
+.dmd.cur{border-color:#ffd23f;box-shadow:0 0 14px #ffd23f88}
+.dmbig{font:28px Bungee,sans-serif;color:#ffd23f;margin:8px 0}
 .dvgrid{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:5px;width:100%;padding:4px 0}
 .dvcol{display:flex;flex-direction:column;gap:5px;min-width:0}
 .dvh{font:10px Bungee,sans-serif;writing-mode:vertical-rl;transform:rotate(180deg);height:84px;margin:0 auto;white-space:nowrap}
@@ -177,7 +188,7 @@ const TH=[
 {n:'Gökkuşağı',h:0,c:1000,rb:1,g:0,tr:70,ty:'r',sat:2,gl:1.7,d:'Renk değiştirir · gökkuşağı izi'},
 {n:'Galaksi',h:250,c:1500,g:1,tr:85,ty:'g',pu:1,sat:3,gl:1.9,d:'3 uydu · yıldız tozu'},
 {n:'Elmas',h:185,c:2200,rb:1,g:2,tr:110,ty:'r',pu:1,sat:3,gl:2.2,d:'Hepsi bir arada · efsane iz'}];
-let toast='';{const d=new Date().toDateString();if(S.day!==d){S.streak=S.day?Math.min(S.streak+1,7):1;S.day=d;const b=10*S.streak;S.coins+=b;toast='Günlük ödül: +'+b+' jeton ('+S.streak+'. gün)';save()}}
+let toast='';
 /* ---------- SES ---------- */
 let AC,mg,sg,nt=0,stp=0;
 function ac(){if(!AC){AC=new(window.AudioContext||window.webkitAudioContext)();mg=AC.createGain();mg.gain.value=.22;mg.connect(AC.destination);sg=AC.createGain();sg.gain.value=.5;sg.connect(AC.destination);nt=AC.currentTime+.1;setInterval(sched,25)}if(AC.state=='suspended')AC.resume()}
@@ -188,7 +199,7 @@ function sfx(n){if(!AC||!S.sfx||((n=='coin'||n=='shield')&&S.pk===0))return;cons
  if(n=='near')tn(900,.12,'triangle',.25,sg,t,1700);
  if(n=='crash'){nz(.7,.9,sg,t);tn(180,.6,'sawtooth',.4,sg,t,30)}
  if(n=='win')[523,659,784,1047,1319].forEach((f,i)=>tn(f,.25,'square',.18,sg,t+i*.09));
- if(n=='coin')tn(1200,.09,'square',.12,sg,t,1800);if(n=='shield')[600,900,1200].forEach((f,i)=>tn(f,.2,'triangle',.25,sg,t+i*.06));if(n=='buy')[880,1320].forEach((f,i)=>tn(f,.15,'triangle',.25,sg,t+i*.08))}
+ if(n=='coin')tn(1200,.09,'square',.12,sg,t,1800);if(n=='shield')[600,900,1200].forEach((f,i)=>tn(f,.2,'triangle',.25,sg,t+i*.06));if(n=='load')[1046,1318,1568,1760].forEach((f,i)=>tn(f,.1,'triangle',.2,sg,t+i*.045));if(n=='buy')[880,1320].forEach((f,i)=>tn(f,.15,'triangle',.25,sg,t+i*.08))}
 function sched(){if(!AC||!S.music||document.hidden)return;const pl=st=='play';while(nt<AC.currentTime+.15){const s=stp%16,b=[55,55,65.41,49][(stp>>4)&3],sc=[0,3,7,10,12,10,7,3];
  if(s%4==0)tn(b,.22,'sawtooth',pl?.5:.3,mg,nt);
  tn(b*4*2**(sc[(stp+(stp>>4))%8]/12),.12,'square',pl?.1:.05,mg,nt);
@@ -398,7 +409,7 @@ function draw(dt){if(!RD)return;if(TWO){drawTwo(dt);return}
  BPS.geometry.attributes.position.needsUpdate=BPS.geometry.attributes.color.needsUpdate=true;fl.style.opacity=flash*.35;RD.render(SC,CAM)}
 const stars=n=>'★'.repeat(n)+'☆'.repeat(3-n),CI='<svg width=18 height=18 viewBox="0 0 20 20"><circle cx=10 cy=10 r=8 fill="#ffd23f" stroke="#fff" stroke-width=2></circle></svg>';
 const T={
-home:()=>{const n=Math.min(S.unlocked,LV);return`<div class=top><button class=pf data-a=profile>👤 ${S.name||'Profil'}</button><div class=chip>${CI} ${S.coins}</div><div class=chip>🔥 ${S.streak||1}. gün</div></div>
+home:()=>{const n=Math.min(S.unlocked,LV);return`<div class=top><button class=pf data-a=profile>👤 ${S.name||'Profil'}</button><div class=chip>${CI} ${S.coins}</div><button class=chip data-a=daily style="font:inherit;border:0;cursor:pointer">🔥 ${S.streak||1}. gün</button></div>
 <h1 class=logo>GİRDAP</h1><p class=sub>Girdabın ucuna kadar süzül, bloklardan kaç.</p>
 <div class=prow><button class=play data-a=play data-v=${n}><i>▶</i><span>OYNA<small>Bölüm ${n} · ${tier(n)}</small></span></button><button class=p2b data-a=play2><b>👥</b>2 KİŞİLİK<small>Ekran bölünür · A/D &amp; ← →</small></button></div>
 <div class=tiles><button class=tile data-a=levels><b>▦</b>Bölümler<small>${tot()}/${LV*3} ★</small></button><button class=tile data-a=play data-v=0><b>∞</b>Sonsuz<small>Rekor ${S.best[0]||0}</small></button><button class=tile data-a=shop><b>●</b>Toplar<small>${S.themes.length}/${TH.length}</small></button><button class=tile data-a=friends style="position:relative"><b>☺</b>Arkadaşlar${REQN?'<i class=rdot></i>':''}</button><button class=tile data-a=stats><b>≡</b>İstatistik<small>${tot()} ★</small></button><button class=tile data-a=settings><b>⚙</b>Ayarlar<small>Ses · Kamera</small></button></div>
@@ -658,6 +669,37 @@ function dvLs(){let h='<h2>Bölüm Seç (Test)</h2><div class=dvgrid>';for(let w
  U.innerHTML='<div class=pg>'+h+'<button class="b g" data-a=dvl data-v=0>∞ Sonsuz</button><button class="b g" data-a=dvx>Kapat</button></div>'}
 Object.assign(A,{dvgo:dvGo,dvx:dvClose,dvl:v=>{dvPrev=null;start(v)}});
 Object.assign(A,{lang:()=>{S.lang=S.lang=='en'?'tr':'en';save();show('settings')}});
+/* ---------- GÜNLÜK ÖDÜL (öğle 12:00 sıfırlanır) ---------- */
+const DR=[10,20,30,40,50,60,100];
+const dstr=d=>d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+const dayCount=()=>Math.floor((Date.now()-new Date().getTimezoneOffset()*6e4-12*36e5)/864e5);
+const dailyReady=()=>S.drn!==dayCount();
+function nextNoonT(){const d=new Date();d.setHours(12,0,0,0);if(d<=new Date())d.setDate(d.getDate()+1);return d.getTime()}
+function fmtMs(ms){ms=Math.max(0,ms|0);const h=String(Math.floor(ms/36e5)).padStart(2,'0'),m=String(Math.floor(ms%36e5/6e4)).padStart(2,'0'),s2=String(Math.floor(ms%6e4/1e3)).padStart(2,'0');return h+':'+m+':'+s2}
+function dayTick(){const c=dayCount();if(S.gi===undefined||S.gi===null){S.gi=c;S.streak=S.streak||1;save();return}if(c>S.gi){S.streak=(c-S.gi===1)?(S.streak||1)+1:1;S.gi=c;save();pop('Yeni gün! Gün sayacı: '+S.streak)}}
+function dmCards(){const idx=(S.streak-1)%7,ready=dailyReady();let h='';for(let k=0;k<7;k++){const cl=ready?(k<idx?'done':(k===idx?'cur':'')):(k<=idx?'done':'');h+=`<div class="dmd ${cl}"><small>Gün ${k+1}</small><b>${DR[k]}</b></div>`}return h}
+function dailyOpen(){dailyClose();dayTick();const ready=dailyReady(),idx=(S.streak-1)%7,d=document.createElement('div');d.id='dm';d.className='dm';
+ d.innerHTML=`<div class=dmc><h2>Günlük Ödül</h2><p>🔥 <b>${S.streak||1}. gün</b></p><div class=dmrow>${dmCards()}</div>`+
+ (ready?`<p class=dmbig>+${DR[idx]} 🪙</p><button id=dmb class="b p big">Ödülü al</button>`:`<p>Bugünkü ödül alındı ✓</p><p>Sonraki ödül: <b id=dmt>${fmtMs(nextNoonT()-Date.now())}</b></p>`)+
+ `<button id=dmx class="b g">Kapat</button></div>`;
+ document.body.appendChild(d);
+ d.onclick=e=>{if(e.target===d)dailyClose()};
+ d.querySelector('#dmx').onclick=dailyClose;
+ const b=d.querySelector('#dmb');if(b)b.onclick=()=>dailyClaim(b)}
+function dailyClose(){const d=document.getElementById('dm');if(d)d.remove()}
+function dailyClaim(btn){if(!dailyReady())return;const idx=(S.streak-1)%7,amt=DR[idx];S.drn=dayCount();save();sfx('buy');btn.disabled=true;
+ const from=btn.getBoundingClientRect(),chip=document.querySelector('.top .chip'),to=chip?chip.getBoundingClientRect():{left:innerWidth/2,top:24,width:0,height:0};
+ const n=Math.min(16,6+Math.floor(amt/10));
+ for(let i=0;i<n;i++){const c=document.createElement('div');c.textContent='🪙';c.style.cssText='position:fixed;z-index:300;pointer-events:none;font-size:20px;transition:transform .8s cubic-bezier(.5,0,.8,.4),opacity .8s;left:'+(from.left+from.width/2-10)+'px;top:'+(from.top+from.height/2-10)+'px';document.body.appendChild(c);
+  const dx=(to.left+to.width/2)-(from.left+from.width/2)+(Math.random()-.5)*50,dy=(to.top+to.height/2)-(from.top+from.height/2)+(Math.random()-.5)*30;
+  setTimeout(()=>{c.style.transform='translate('+dx+'px,'+dy+'px) scale(.5)';c.style.opacity='.3'},i*70+40);setTimeout(()=>c.remove(),i*70+1000);setTimeout(()=>sfx('coin'),i*70+820)}
+ setTimeout(()=>{S.coins+=amt;save();const ch=document.querySelector('.top .chip');if(ch){ch.innerHTML=CI+' '+S.coins;ch.animate([{transform:'scale(1.25)'},{transform:'scale(1)'}],{duration:300})}sfx('load');dailyClose();pop('+'+amt+' jeton hesabına eklendi')},1000)}
+Object.assign(A,{daily:dailyOpen});
+setInterval(()=>{const t=document.getElementById('dmt');if(t)t.textContent=fmtMs(nextNoonT()-Date.now())},1000);
+setInterval(()=>{dayTick();if(U.dataset.s=='home'&&!document.getElementById('dm')&&dailyReady()&&!dmAuto){dmAuto=1;dailyOpen()}const ch=document.querySelector('.top button.chip');if(ch)ch.textContent='🔥 '+(S.streak||1)+'. gün'},15000);
+let dmAuto=0;
+document.addEventListener('pointerdown',e=>{const b=e.target.closest&&e.target.closest('button');if(b&&!U.contains(b))sfx('click')},true);
+dayTick();
 addEventListener('keydown',e=>{if(e.target.tagName=='INPUT')return;if((e.key==' '||e.key=='Enter')&&st!='play'&&!dvPrev&&document.activeElement.tagName!='BUTTON'){const b=U.querySelector('.play,.b.p');if(b){e.preventDefault();b.click()}}if(e.key=='h'||e.key=='H'){e.preventDefault();dvOpen()}});
 show(S.name?'home':'register');requestAnimationFrame(loop);
 </script></body></html>
