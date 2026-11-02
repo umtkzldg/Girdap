@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="tr"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Girdap</title>
 <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -165,6 +165,51 @@ button:disabled{opacity:.6}
 @keyframes wpop{0%{transform:scale(.3);opacity:0}70%{transform:scale(1.15);opacity:1}100%{transform:scale(1)}}
 @keyframes wboom{0%{transform:scale(3) rotate(-8deg);opacity:0}60%{transform:scale(.9) rotate(2deg);opacity:1}100%{transform:scale(1) rotate(0)}}
 #ui[data-s=levels] .pg,#ui[data-s=shop] .pg{max-width:96vw}
+/* ---------- TELEFON UYUMU ---------- */
+html,body{overscroll-behavior:none;-webkit-touch-callout:none;-webkit-user-select:none}
+canvas{touch-action:none}
+#hud{padding:10px 12px;gap:10px}
+#pb,#mb{width:48px;height:48px}
+@media (max-width:480px){
+ #ui{padding:14px 12px}
+ .pg{padding:20px 14px;max-width:94vw;border-radius:20px;gap:12px}
+ .pg h2{font-size:clamp(28px,9vw,40px)}
+ .pg p{font-size:16px}
+ .b{min-width:180px;padding:14px 18px;font-size:16px}
+ .b.p.big{padding:16px 24px;font-size:20px}
+ .b.g{min-width:0;padding:12px 16px}
+ .play{font-size:24px;padding:12px 24px 12px 14px;gap:12px}
+ .play i{width:46px;height:46px;font-size:20px}
+ .tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;max-width:340px;gap:8px}
+ .tile{width:auto;min-width:0;padding:10px 4px;font-size:11px;word-break:break-word}
+ .tile b{font-size:22px}
+ .tile small{font-size:11px}
+ .grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;width:100%;max-width:340px}
+ .lv{height:62px;font-size:18px}
+ .ic{width:48px;height:48px;margin-left:4px}
+ .chip{font-size:13px;padding:7px 12px}
+ .set{padding:12px 14px}
+ .wh{font-size:13px}
+ .dmc{padding:16px 12px}
+ .dmbig{font-size:24px}
+}
+@media (max-height:500px) and (orientation:landscape){
+ #ui{padding:8px 12px;justify-content:flex-start}
+ .pg{padding:10px 16px;gap:8px}
+ h1{font-size:clamp(36px,9vh,52px)}
+ h2{font-size:clamp(26px,8vh,36px)}
+ .sub{font-size:15px;margin-bottom:0}
+ .pg p{font-size:14px}
+ .b{padding:10px 16px;font-size:14px;min-width:0}
+ .b.p.big{padding:12px 26px;font-size:18px}
+ .play{font-size:22px;padding:10px 20px 10px 12px}
+ .play i{width:40px;height:40px;font-size:18px}
+ .lv{height:50px;font-size:16px}
+ .grid{grid-template-columns:repeat(10,minmax(0,1fr));gap:6px}
+ .top{top:calc(env(safe-area-inset-top,0px) + 6px)}
+ #cb{top:calc(env(safe-area-inset-top,0px) + 56px);font-size:22px}
+ .tiles{width:auto}
+}
 </style><link rel="manifest" href="manifest.json"><meta name="theme-color" content="#05020d"><link rel="apple-touch-icon" href="icon-192.png"><script>if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script></head><body>
 <canvas id="c"></canvas><div id="vg"></div>
 <div id="hud"><div class="hl"><span id="hL"></span><b id="hS">0</b></div><div id="bar"><i id="bi"></i></div><button id="mb">🔊</button><button id="pb">II</button></div>
@@ -234,10 +279,10 @@ const bh=(b,j)=>b.r>=360?(b.h+j*2.5+t*45)%360:b.h+Math.sin(j*.06+t*.4)*b.r+t*35,
 const BGP=[0x0c1f5c,0x3a0f66,0x03424d,0x4a0a1e,0x0b3d22,0x4a3a08,0x1e1358].map(h=>new THREE.Color(h));const BGT=new THREE.Color();
 function bgOv(){const k=Math.floor(t)%BGP.length,f=t-Math.floor(t),q=f*f*(3-2*f);BGT.copy(BGP[k]).lerp(BGP[(k+1)%BGP.length],q);SC.background.copy(BGT);SC.fog.color.copy(BGT)}
 function bcol(j,o,bg){const sg=j/SEG,i=Math.floor(sg),u=Math.max(0,(sg-i-.9)/.1),A=bix(i),B=bix(i+1);
- if(bg){o.setHex(A.bg);CT.setHex(B.bg)}else{o.setHSL(hu(bh(A,j)),A.s,A.l*(A.fl?1+.2*Math.sin(t*14+j*.7):1));CT.setHSL(hu(bh(B,j)),B.s,B.l)}if(u>0)o.lerp(CT,u)}
+ if(bg){o.setHex(A.bg);CT.setHex(B.bg)}else{o.setHSL(hu(bh(A,j)),A.s,.55*A.l*(A.fl?1+.2*Math.sin(t*14+j*.7):1));CT.setHSL(hu(bh(B,j)),B.s,.55*B.l)}if(u>0)o.lerp(CT,u)}
 function onrs(){if(RD){RD.setSize(W,H,false);CAM.aspect=W/H;CAM.updateProjectionMatrix()}}
 function initGL(){
- RD=new THREE.WebGLRenderer({canvas:cv,antialias:true});RD.setPixelRatio(Math.min(devicePixelRatio||1,1.75));RD.setSize(W,H,false);
+ RD=new THREE.WebGLRenderer({canvas:cv,antialias:true});RD.setPixelRatio(Math.min(devicePixelRatio||1,matchMedia('(pointer:coarse)').matches?1.25:1.75));RD.setSize(W,H,false);
  SC=new THREE.Scene();SC.fog=new THREE.Fog(0x05020d,12,62);SC.background=new THREE.Color(0x05020d);
  CAM=new THREE.PerspectiveCamera(72,W/H,.05,90);SC.add(CAM);SC.add(new THREE.AmbientLight(0xffffff,.6));const hl=new THREE.PointLight(0xffffff,1,16);CAM.add(hl);
  const G=[0,1].map(par=>{const p=[],c=[],s=Math.PI/4;for(let k=0;k<8;k++){const a=k*s,b=a+s,v=(par^(k&1))?.95:.62,A=[Math.cos(a),Math.sin(a)],B=[Math.cos(b),Math.sin(b)];[[A,0],[B,0],[B,-1],[A,0],[B,-1],[A,-1]].forEach(q=>{p.push(q[0][0],q[0][1],q[1]);c.push(v,v,v)})}
@@ -269,7 +314,7 @@ function obMesh(o){const ro=.95,ri=o.r,a=o.a,w=o.w,sh=new THREE.Shape();if(o.bar
 function kill(o){if(o.m){SC.remove(o.m);o.m.traverse(x=>{if(x.geometry)x.geometry.dispose();if(x.material)x.material.dispose()});o.m=null}}
 function kp(p){if(p.m){SC.remove(p.m);p.m=null}}
 function mk(z,a,w,l,r,o){const pl=bix(Math.floor(z/SEG)).pal,ob={z,a,w,l,r,o:o||0,h:pl[pn++%pl.length]};ob.m=obMesh(ob);OB.push(ob)}
-function addPK(z,a,tp){const p={z,a,t:tp},m=new THREE.Mesh(tp=='c'?CG:SG,tp=='c'?CM:SM);m.position.set(off(z)+Math.cos(a)*.78,oy(z)+Math.sin(a)*.78,-z);SC.add(m);p.m=m;PK.push(p)}
+let PKA=null;function pkAssets(){if(PKA)return PKA;const gold=new THREE.MeshPhongMaterial({color:0xffd23f,emissive:0x6a4a00,shininess:120,specular:0xfff2b0}),rimM=new THREE.MeshPhongMaterial({color:0xfff0a0,emissive:0x8a6a10,shininess:140,specular:0xffffff}),crys=new THREE.MeshPhongMaterial({color:0x4de8ff,emissive:0x0a5a6a,shininess:110,specular:0xffffff,flatShading:true}),lineM=new THREE.LineBasicMaterial({color:0x9ff6ff,transparent:true,opacity:.85}),ringM=new THREE.MeshBasicMaterial({color:0x4de8ff,transparent:true,opacity:.55,depthWrite:false,blending:THREE.AdditiveBlending});PKA={cg:CG,gold,rimG:new THREE.TorusGeometry(.16,.024,10,32),rimM,crys,og:new THREE.OctahedronGeometry(.14,0),eg:new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(.23,0)),lineM,rg:new THREE.TorusGeometry(.25,.012,8,40),ringM};return PKA}function pkMesh(tp){const A=pkAssets(),g=new THREE.Group();if(tp=='c'){g.add(new THREE.Mesh(A.cg,A.gold),new THREE.Mesh(A.rimG,A.rimM))}else{g.add(new THREE.Mesh(A.og,A.crys),new THREE.LineSegments(A.eg,A.lineM),new THREE.Mesh(A.rg,A.ringM))}return g}function addPK(z,a,tp){const p={z,a,t:tp},m=pkMesh(tp);m.position.set(off(z)+Math.cos(a)*.78,oy(z)+Math.sin(a)*.78,-z);SC.add(m);p.m=m;PK.push(p)}
 function clearAll(){OB.forEach(kill);PK.forEach(kp);DEC.forEach(kp);DEC=[];if(GL){GL.ms.forEach(m=>SC.remove(m));GL=null}OB=[];PK=[];if(PT){SC.remove(PT);PT.traverse(x=>{if(x.geometry)x.geometry.dispose();if(x.material)x.material.dispose()});PT=null}}
 function runs(m,z,l,r){const s=TAU/8;for(let k=0;k<8;k++)if(m>>k&1&&!(m>>((k+7)%8)&1)){let w=0;while(m>>((k+w)%8)&1&&w<8)w++;mk(z,k*s,w*s,l,r)}}
 function gen(){const N=8,s=TAU/N;if(C.inf)C.d=Math.min(1,.25+pos/1000);
@@ -655,8 +700,12 @@ const mb=$('#mb');mb.textContent=(S.music!==0||S.sfx!==0)?'🔊':'🔇';
 mb.onclick=e=>{e.stopPropagation();ac();const on=S.music!==0||S.sfx!==0;S.music=S.sfx=on?0:1;save();mb.textContent=on?'🔇':'🔊'};
 addEventListener('keydown',e=>{const k=e.key;if(k=='ArrowLeft'||k=='a'||k=='A')kd=-1;if(k=='ArrowRight'||k=='d'||k=='D')kd=1;if(k=='a'||k=='A')K[0]=-1;if(k=='d'||k=='D')K[0]=1;if(k=='ArrowLeft')K[1]=-1;if(k=='ArrowRight')K[1]=1;if(k=='Escape'||k=='p'||k=='P')pause()});
 addEventListener('keyup',e=>{const k=e.key;if(k=='a'||k=='A'||k=='d'||k=='D')K[0]=0;if(k=='ArrowLeft'||k=='ArrowRight')K[1]=0;if(['ArrowLeft','a','A'].includes(k)&&kd<0)kd=0;if(['ArrowRight','d','D'].includes(k)&&kd>0)kd=0});
-addEventListener('pointerdown',e=>{if(st=='play'&&!e.target.closest('button')){pd=e.clientX<W/2?-1:1;if(TWO){const q=e.clientX<W/2?0:1;PX[q]=(e.clientX-q*W/2)<W/4?-1:1}}});
-addEventListener('pointerup',()=>{pd=0;PX=[0,0]});addEventListener('pointercancel',()=>{pd=0;PX=[0,0]});
+const PTR=new Map();
+function steer(){pd=0;PX=[0,0];if(st!='play')return;for(const p of PTR.values()){const d=p.x<W/2?-1:1;if(!pd)pd=d;if(TWO){const q=p.x<W/2?0:1;PX[q]=(p.x-q*W/2)<W/4?-1:1}}}
+addEventListener('pointerdown',e=>{if(st=='play'&&!e.target.closest('button')){PTR.set(e.pointerId,{x:e.clientX});steer()}});
+addEventListener('pointermove',e=>{const p=PTR.get(e.pointerId);if(p){p.x=e.clientX;steer()}});
+const endPtr=e=>{if(PTR.delete(e.pointerId))steer()};
+addEventListener('pointerup',endPtr);addEventListener('pointercancel',endPtr);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)pause()});
 /* ---------- GİZLİ TEST MENÜSÜ (H tuşu, şifre: umt) ---------- */
 let dvPrev=null;
